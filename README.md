@@ -18,9 +18,15 @@ And, here is another example of moons dataset.
 
 ## Getting Started
 
-Make sure you have Python 3.10+ installed.
+Clone the repository and set up the python environment.
 
-To set up the environment using `uv`:
+```bash
+git clone https://github.com/keishihara/flow-matching.git
+cd flow-matching
+```
+
+Make sure you have Python 3.10+ installed.
+To set up the python environment using `uv`:
 
 ```bash
 uv sync
