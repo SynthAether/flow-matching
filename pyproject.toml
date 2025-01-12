@@ -15,6 +15,7 @@ classifiers = [
 ]
 dependencies = [
     "einops==0.8.0",
+    "gdown>=5.2.0",
     "matplotlib>=3.9.2",
     "scikit-learn>=1.6.0",
     "scipy==1.14.1",
@@ -22,6 +23,7 @@ dependencies = [
     "torchdiffeq>=0.2.5",
     "torchvision",
     "tqdm==4.66.5",
+    "transformers>=4.48.0",
 ]
 
 [build-system]
