@@ -43,13 +43,39 @@ pip install -e .
 
 ## Conditional Flow Matching [Lipman+ 2023]
 
-This example demonstrates flow matching on a 2D toy dataset.
+This is the original CFM paper implementation [1]. Some components of the code are adapted from [2] and [3].
+
+### 2D Toy Datasets
+
+You can train the CFM models on 2D synthetic datasets such as `checkerboard` and `moons`. Specify the dataset name using `--dataset` option. Training parameters are predefined in the script, and visualizations of the training results are stored in the `outputs/` directory. Model checkpoints are not included as they are easily reproducible with the default settings.
 
 ```bash
 python train_flow_matching_2d.py --dataset checkerboard
 ```
 
-Several datasets are provided in `flow_matching/datasets.py` such as `checkerboard` and `moons`. The `--dataset` option is required. Training parameters are directly defined in the script, and all visualizations found in `outputs/` are the training results generated with the same default parameters. Also, model checkpoints are not included as they are easily reproducible by running the script above.
+The vector fields and generated samples, like the ones displayed as GIFs at the top of this README, can now be found in the `outputs/` directory.
+
+### Image Datasets
+
+You can also train class-conditional CFM models on popular image classification datasets. Both the generated samples and model checkpoints will be stored in the `outputs/` directory. For a detailed list of training parameters, run `python train_flow_matching_on_images.py --help`.
+
+To train a class-conditional CFM on MNIST dataset, run:
+
+```bash
+python train_flow_matching_on_images.py --do_train --dataset mnist
+```
+
+After training, you can now generate samples with:
+
+```bash
+python train_flow_matching_on_images.py --do_sample --dataset mnist
+```
+
+Now, you should be able to see the generated samples in the `outputs/mnist/` directory.
+
+<p align="center">
+<img align="middle" src="./outputs/mnist/trajectory.gif" height="400" />
+</p>
 
 ## References
 
