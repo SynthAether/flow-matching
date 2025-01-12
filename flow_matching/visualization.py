@@ -201,3 +201,84 @@ def save_vector_field_and_samples_as_gif(
     path = savedir / gif_name
     ani.save(path, writer="pillow")
     print(f"Animation saved to {path}")
+
+
+def plot_likelihood(
+    flow: nn.Module,
+    dataset: SyntheticDataset,
+    output_dir: str = "./",
+    filename: str = "likelihood.png",
+    device: str = "cpu",
+):
+    # Adapted from https://github.com/facebookresearch/flow_matching/blob/main/examples/2d_flow_matching.ipynb
+
+    from torch.distributions import Independent, Normal
+
+    flow.eval()
+
+    # sample with likelihood
+    step_size = 0.05
+
+    square_range = dataset.get_square_range()
+    extent = sum(square_range, [])  # flatten
+    grid_size = 200
+    x_1 = torch.meshgrid(
+        torch.linspace(extent[1], extent[0], grid_size),
+        torch.linspace(extent[2], extent[3], grid_size),
+        indexing="ij",
+    )
+    x_1 = torch.stack([x_1[0].flatten(), x_1[1].flatten()], dim=1).to(device)
+
+    # source distribution is an isotropic gaussian
+    gaussian_log_density = Independent(Normal(torch.zeros(2, device=device), torch.ones(2, device=device)), 1).log_prob
+
+    # Use ODE solver to sample trajectories
+    class WrappedModel(ModelWrapper):
+        def forward(self, x: Tensor, t: Tensor, **extras) -> Tensor:
+            return self.model(x_t=x, t=t)
+
+    wrapped_model = WrappedModel(flow)
+    solver = ODESolver(wrapped_model)
+
+    # compute log likelihood with unbiased hutchinson estimator, average over num_acc
+    num_acc = 10
+    log_p_acc = 0
+
+    for _ in range(num_acc):
+        _, log_p = solver.compute_likelihood(
+            x_1=x_1, method="midpoint", step_size=step_size, exact_divergence=False, log_p0=gaussian_log_density
+        )
+        log_p_acc += log_p
+    log_p_acc /= num_acc
+
+    # compute with exact divergence
+    sol, exact_log_p = solver.compute_likelihood(
+        x_1=x_1,
+        method="midpoint",
+        step_size=step_size,
+        exact_divergence=True,
+        log_p0=gaussian_log_density,
+        return_intermediates=True,
+    )
+    sol = sol.detach().cpu().numpy()
+
+    # plot
+    likelihood = torch.exp(log_p_acc).cpu().reshape(grid_size, grid_size).detach().numpy().T
+    exact_likelihood = torch.exp(exact_log_p).cpu().reshape(grid_size, grid_size).detach().numpy().T
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 6))
+
+    cmin = 0.0
+    cmax = 1 / 32  # 1/32 is the gt likelihood value
+
+    norm = cm.colors.Normalize(vmax=cmax, vmin=cmin)
+
+    axs[0].imshow(likelihood, extent=extent, origin="upper", cmap="viridis", norm=norm)
+    axs[0].set_title(f"Model Likelihood, Hutchinson Estimator, #acc={num_acc}")
+    axs[1].imshow(exact_likelihood, extent=extent, origin="upper", cmap="viridis", norm=norm)
+    axs[1].set_title("Exact Model Likelihood")
+
+    fig.colorbar(cm.ScalarMappable(norm=norm, cmap="viridis"), ax=axs, orientation="horizontal", label="density")
+
+    plt.savefig(Path(output_dir) / filename)
+    print("Likelihood saved to", Path(output_dir) / filename)
