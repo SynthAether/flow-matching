@@ -29,7 +29,7 @@ tqdm = partial(std_tqdm, dynamic_ncols=True)
 @dataclass
 class ScriptArguments:
     do_train: bool = False
-    do_generate: bool = False
+    do_sample: bool = False
     dataset: str = "mnist"
     batch_size: int = 128
     n_epochs: int = 10
@@ -194,5 +194,5 @@ if __name__ == "__main__":
     if script_args.do_train:
         train(script_args)
 
-    if script_args.do_generate:
+    if script_args.do_sample:
         generate_samples_and_save_animation(script_args)
