@@ -88,7 +88,7 @@ class ODESolver:
         method: str = "euler",
         atol: float = 1e-5,
         rtol: float = 1e-5,
-        time_grid: Tensor = torch.tensor([0.0, 1.0]),
+        time_grid: Tensor | None = None,
         return_intermediates: bool = False,
         enable_grad: bool = False,
         **model_extras,
@@ -133,7 +133,10 @@ class ODESolver:
             Union[Tensor, Sequence[Tensor]]: The last timestep when return_intermediates=False, otherwise all values specified in time_grid.
         """
 
-        time_grid = time_grid.to(x_init.device)
+        if time_grid is None:
+            time_grid = torch.tensor([0.0, 1.0], device=x_init.device)
+        else:
+            time_grid = time_grid.to(x_init.device)
 
         def ode_func(t, x):
             return self.velocity_model(x=x, t=t, **model_extras)
@@ -165,7 +168,7 @@ class ODESolver:
         method: str = "euler",
         atol: float = 1e-5,
         rtol: float = 1e-5,
-        time_grid: Tensor = torch.tensor([1.0, 0.0]),
+        time_grid: Tensor | None = None,
         return_intermediates: bool = False,
         exact_divergence: bool = False,
         enable_grad: bool = False,
@@ -192,6 +195,12 @@ class ODESolver:
         Returns:
             Union[Tuple[Tensor, Tensor], Tuple[Sequence[Tensor], Tensor]]: Samples at time_grid and log likelihood values of given x_1.
         """
+
+        if time_grid is None:
+            time_grid = torch.tensor([1.0, 0.0], device=x_1.device)
+        else:
+            time_grid = time_grid.to(x_1.device)
+
         assert (
             time_grid[0] == 1.0 and time_grid[-1] == 0.0
         ), f"Time grid must start at 1.0 and end at 0.0. Got {time_grid}"
