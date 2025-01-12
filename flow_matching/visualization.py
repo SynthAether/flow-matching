@@ -174,8 +174,7 @@ def save_vector_field_and_samples_as_gif(
         axes[1].axis("off")
 
     # Adjust layout to reduce white space
-    # plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05, wspace=0.1)
-    fig.tight_layout()
+    plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05, wspace=0.1)
 
     # Create and save the animation as a GIF
     ani = animation.FuncAnimation(fig, update, frames=sample_steps, interval=interval)

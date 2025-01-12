@@ -63,8 +63,8 @@ def main():
     # Training parameters
     learning_rate = 1e-3
     batch_size = 4096
-    iterations = 20000
-    log_every = 2000
+    iterations = 2000
+    log_every = 200
     hidden_dim = 512
 
     dataset = TOY_DATASETS[args.dataset](device=device)
