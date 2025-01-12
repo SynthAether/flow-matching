@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn.functional as F
-from matplotlib import cm
 from scipy.ndimage import gaussian_filter1d
 from torch import Tensor, nn
 from torch.nn import Module
 
 from flow_matching import visualization
 from flow_matching.datasets import TOY_DATASETS
-from flow_matching.solver import ModelWrapper, ODESolver
+from flow_matching.solver import ModelWrapper
+from flow_matching.utils import set_seed
 
 
 class Swish(Module):
@@ -45,14 +45,6 @@ class Mlp(Module):
         output = self.layers(h)
         return output.reshape(*size)
 
-    def step(self, x_t: Tensor, t_start: Tensor, t_end: Tensor) -> Tensor:
-        # This will be used to sample from the model
-        t_start = t_start.unsqueeze(-1).expand(x_t.size(0), 1)
-        t_mid = t_start + (t_end - t_start) / 2
-        x_mid = x_t + self(x_t=x_t, t=t_start) * (t_end - t_start) / 2
-        flow_mid = self(x_t=x_mid, t=t_mid)
-        return x_t + (t_end - t_start) * flow_mid
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -61,7 +53,7 @@ def main():
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    torch.manual_seed(42)
+    set_seed(42)
     args.output_dir = Path(args.output_dir) / args.dataset
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -121,26 +113,7 @@ def main():
     plt.savefig(Path(args.output_dir) / "losses.png")
     print("Training curves saved to", Path(args.output_dir) / "losses.png")
 
-    # Sampling (naive)
-
-    x = torch.randn(batch_size, 2).to(device)
-    n_steps = 8
-    fig, axes = plt.subplots(1, n_steps + 1, figsize=(30, 4), sharex=True, sharey=True)
-    time_steps = torch.linspace(0, 1.0, n_steps + 1).to(device)
-
-    axes[0].scatter(x.detach().cpu()[:, 0], x.detach().cpu()[:, 1], s=10)
-    axes[0].set_title(f"t = {time_steps[0]:.2f}")
-    axes[0].set_xlim(-3.0, 3.0)
-    axes[0].set_ylim(-3.0, 3.0)
-    for i in range(n_steps):
-        x = flow.step(x_t=x, t_start=time_steps[i], t_end=time_steps[i + 1])
-        axes[i + 1].scatter(x.detach().cpu()[:, 0], x.detach().cpu()[:, 1], s=10)
-        axes[i + 1].set_title(f"t = {time_steps[i + 1]:.2f}")
-    plt.tight_layout()
-    plt.savefig(Path(args.output_dir) / f"sampling_{args.dataset}.png")
-    print("Sampling results saved to", Path(args.output_dir) / f"sampling_{args.dataset}.png")
-
-    # Sampling with ODE solver
+    # Sampling with ODE solver and visualization
 
     class WrappedModel(ModelWrapper):
         def forward(self, x: Tensor, t: Tensor, **extras) -> Tensor:
@@ -148,45 +121,25 @@ def main():
 
     wrapped_model = WrappedModel(flow)
 
-    step_size = 0.05
-    norm = cm.colors.Normalize(vmax=50, vmin=0)
-    num_samples = 1000000
-    sample_steps = 10
-    T = torch.linspace(0, 1, sample_steps)  # sample times
-    T = T.to(device)
-
-    x_init = torch.randn((num_samples, 2), dtype=torch.float32, device=device)
-    solver = ODESolver(wrapped_model)
-    sol = solver.sample(x_init=x_init, step_size=step_size, method="midpoint", time_grid=T, return_intermediates=True)
-    sol = sol.detach().cpu().numpy()
-    T = T.cpu()
-
-    square_range = dataset.get_square_range(samples=torch.from_numpy(sol[-1]))
-    fig, axes = plt.subplots(1, sample_steps, figsize=(2 * sample_steps, 2))
-
-    for i in range(sample_steps):
-        H = axes[i].hist2d(sol[i, :, 0], sol[i, :, 1], bins=300, norm=norm, range=square_range)
-        cmin = 0.0
-        cmax = torch.quantile(torch.from_numpy(H[0]), 0.99).item()
-        norm = cm.colors.Normalize(vmax=cmax, vmin=cmin)
-        axes[i].hist2d(sol[i, :, 0], sol[i, :, 1], bins=300, norm=norm, range=square_range)
-        axes[i].set_aspect("equal")
-        axes[i].axis("off")
-        axes[i].set_title(f"t = {T[i]:.2f}")
-
-    plt.tight_layout()
-    plt.savefig(Path(args.output_dir) / f"sampling_{args.dataset}_w_solver.png")
-    print("Sampling results with ODE solver saved to", Path(args.output_dir) / f"sampling_{args.dataset}_w_solver.png")
-
-    # Visualize the vector field and samples
-    visualization.save_vector_field_and_samples_as_gif(
-        flow=flow,
+    visualization.plot_ode_sampling_evolution(
+        flow=wrapped_model,
         dataset=dataset,
-        savedir=args.output_dir,
-        sample_steps=101,
-        grid_size=15,
-        gif_name=f"vector_field_{args.dataset}.gif",
-        interval=50,
+        output_dir=args.output_dir,
+        filename=f"sampling_{args.dataset}_w_solver.png",
+    )
+
+    visualization.save_vector_field_and_samples_as_gif(
+        flow=wrapped_model,
+        dataset=dataset,
+        output_dir=args.output_dir,
+        filename=f"vector_field_{args.dataset}.gif",
+    )
+
+    visualization.plot_likelihood(
+        flow=wrapped_model,
+        dataset=dataset,
+        output_dir=args.output_dir,
+        filename=f"likelihood_{args.dataset}.png",
     )
 
 
