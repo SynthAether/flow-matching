@@ -130,23 +130,16 @@ class DatasetInvertocat(SyntheticDataset):
         return torch.from_numpy(means + np.random.randn(n, 2) * self.std).float().to(self.device)
 
 
-TOY_DATASETS: dict[str, type[SyntheticDataset]] = {
-    "moons": DatasetMoons,
-    "mixture": DatasetMixture,
-    "siggraph": DatasetSiggraph,
-    "checkerboard": DatasetCheckerboard,
-    "invertocat": DatasetInvertocat,
-}
-
-
 if __name__ == "__main__":
-    # Visualize the above datasets
+    # Plot the above datasets
 
     import argparse
     from pathlib import Path
 
     import matplotlib.cm as cm
     import matplotlib.pyplot as plt
+
+    from flow_matching.datasets import TOY_DATASETS
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="checkerboard")
