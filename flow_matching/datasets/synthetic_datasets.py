@@ -82,7 +82,7 @@ class DatasetSiggraph(SyntheticDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        with open(Path(__file__).parents[1] / "data" / "siggraph.pkl", "rb") as f:
+        with open(Path(__file__).parents[2] / "data" / "siggraph.pkl", "rb") as f:
             XY = np.array(pickle.load(f), dtype=np.float32)
             XY -= np.mean(XY, axis=0)  # center
         self.XY = torch.from_numpy(XY).to(self.device)
@@ -111,7 +111,7 @@ class DatasetInvertocat(SyntheticDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        image = Image.open(Path(__file__).parents[1] / "data" / "invertocat.png").convert("L")
+        image = Image.open(Path(__file__).parents[2] / "data" / "invertocat.png").convert("L")
         image = np.array(image)
         h, w = image.shape
         x = np.linspace(-4, 4, w)
