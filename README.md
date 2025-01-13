@@ -7,13 +7,13 @@ This repository contains a simple PyTorch implementation of the paper [Flow Matc
 The gif below demonstrates mapping a single Gaussian distribution to a checkerboard distribution, with the vector field visualized.
 
 <p align="center">
-<img align="middle" src="./outputs/checkerboard/vector_field_checkerboard.gif" height="400" />
+<img align="middle" src="./outputs/cfm/checkerboard/vector_field_checkerboard.gif" height="400" />
 </p>
 
 And, here is another example of moons dataset.
 
 <p align="center">
-<img align="middle" src="./outputs/moons/vector_field_moons.gif" height="400" />
+<img align="middle" src="./outputs/cfm/moons/vector_field_moons.gif" height="400" />
 </p>
 
 ## Getting Started
@@ -53,11 +53,11 @@ You can train the CFM models on 2D synthetic datasets such as `checkerboard` and
 python train_flow_matching_2d.py --dataset checkerboard
 ```
 
-The vector fields and generated samples, like the ones displayed as GIFs at the top of this README, can now be found in the `outputs/` directory.
+The vector fields and generated samples, like the ones displayed as GIFs at the top of this README, can now be found in the `outputs/cfm/` directory.
 
 ### Image Datasets
 
-You can also train class-conditional CFM models on popular image classification datasets. Both the generated samples and model checkpoints will be stored in the `outputs/` directory. For a detailed list of training parameters, run `python train_flow_matching_on_images.py --help`.
+You can also train class-conditional CFM models on popular image classification datasets. Both the generated samples and model checkpoints will be stored in the `outputs/cfm` directory. For a detailed list of training parameters, run `python train_flow_matching_on_images.py --help`.
 
 To train a class-conditional CFM on MNIST dataset, run:
 
@@ -71,10 +71,10 @@ After training, you can now generate samples with:
 python train_flow_matching_on_images.py --do_sample --dataset mnist
 ```
 
-Now, you should be able to see the generated samples in the `outputs/mnist/` directory.
+Now, you should be able to see the generated samples in the `outputs/cfm/mnist/` directory.
 
 <p align="center">
-<img align="middle" src="./outputs/mnist/trajectory.gif" height="400" />
+<img align="middle" src="./outputs/cfm/mnist/trajectory.gif" height="400" />
 </p>
 
 ## References
