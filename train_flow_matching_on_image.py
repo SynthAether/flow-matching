@@ -43,7 +43,7 @@ class ScriptArguments:
 def train(args: ScriptArguments):
     """Train the flow matching model on the given dataset."""
 
-    output_dir = Path(args.output_dir) / args.dataset
+    output_dir = Path(args.output_dir) / "cfm" / args.dataset
     output_dir.mkdir(parents=True, exist_ok=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -113,7 +113,7 @@ def train(args: ScriptArguments):
 def generate_samples_and_save_animation(args: ScriptArguments):
     """Generate samples following the flow and save the animation."""
 
-    output_dir = Path(args.output_dir) / args.dataset
+    output_dir = Path(args.output_dir) / "cfm" / args.dataset
     assert output_dir.is_dir(), f"Output directory {output_dir} does not exist"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -54,7 +54,7 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     set_seed(42)
-    args.output_dir = Path(args.output_dir) / args.dataset
+    args.output_dir = Path(args.output_dir) / "cfm" / args.dataset
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Using device: {device}")
@@ -96,6 +96,7 @@ def main():
             print(f"| step: {global_step+1:6d} | loss: {loss.item():8.4f} |")
 
     flow.eval()
+    torch.save(flow.state_dict(), Path(args.output_dir) / "ckpt.pth")
 
     # Plot learning curves
 
