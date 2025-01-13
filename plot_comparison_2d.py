@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 import matplotlib.animation as animation
 import matplotlib.cm as cm
@@ -209,7 +210,9 @@ def main():
     ani = animation.FuncAnimation(fig, update, frames=args.sample_steps)
 
     print("Saving animation...")
-    ani.save(f"{args.output_dir}/cfm_reflow_{args.dataset}.gif", writer="pillow", fps=20)
+    folder = Path(args.output_dir) / "comparisons"
+    folder.mkdir(parents=True, exist_ok=True)
+    ani.save(folder / f"cfm_reflow_{args.dataset}.gif", writer="pillow", fps=20)
 
 
 if __name__ == "__main__":
