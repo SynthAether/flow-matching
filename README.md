@@ -77,8 +77,39 @@ Now, you should be able to see the generated samples in the `outputs/cfm/mnist/`
 <img align="middle" src="./outputs/cfm/mnist/trajectory.gif" height="400" />
 </p>
 
+## Rectified Flow [Liu+ 2023]
+
+This is an implementation of the Reflow model (2-Rectified Flow to be specific) from the Rectified Flow paper [2].
+
+### 2D Synthetic Data
+
+We have implemented the Reflow on 2d synthetic datasets, same as the CFM. To train the reflow, you have to specify pretrained CFM checkpoints as reflow is a distillation model.
+
+For example, to train on the `checkerboard` dataset with a pretrained CFM checkpoint:
+
+```bash
+python train_reflow_2d.py --dataset checkerboard --pretrained-model outputs/cfm/checkerboard/ckpt.pth
+```
+
+The training results, including vector field visualizations and generated samples, are saved under `outputs/reflow/` folder.
+
+### Comparison of sampling process between CFM and Reflow
+
+To compare CFM and Reflow on 2d datasets, run:
+
+```bash
+python plot_comparison_2d.py --dataset checkerboard
+```
+
+The resulting GIFs can be found under `outputs/comparisons/` folder. Below is an example comparison of the two methods in the `checkerboard` dataset:
+
+<p align="center">
+<img align="middle" src="./outputs/comparisons/cfm_reflow_checkerboard.gif" height="400" />
+</p>
+
 ## References
 
 - [1] Lipman, Yaron, et al. "Flow Matching for Generative Modeling." [arXiv:2210.02747](https://arxiv.org/abs/2210.02747)
-- [2] [facebookresearch/flow_matching](https://github.com/facebookresearch/flow_matching)
-- [3] [atong01/conditional-flow-matching](https://github.com/atong01/conditional-flow-matching)
+- [2] Liu, Xingchao, et al. "Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow." [arXiv:2209.03003](https://arxiv.org/abs/2209.03003)
+- [3] [facebookresearch/flow_matching](https://github.com/facebookresearch/flow_matching)
+- [4] [atong01/conditional-flow-matching](https://github.com/atong01/conditional-flow-matching)
